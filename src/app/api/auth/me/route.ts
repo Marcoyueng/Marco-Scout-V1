@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server';
-import { withAuth, publicUser } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-export const GET = withAuth(async (_req, _ctx: object, user) => {
-  return NextResponse.json({ user: publicUser(user) });
-});
+export async function GET(_req: NextRequest) {
+  return NextResponse.json({
+    authenticated: false,
+    user: null,
+  });
+}

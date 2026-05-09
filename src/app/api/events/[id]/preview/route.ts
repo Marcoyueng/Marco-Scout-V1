@@ -6,11 +6,18 @@ export const runtime = 'nodejs';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const eventId = parseInt(params.id);
-  if (Number.isNaN(eventId))
-    return NextResponse.json({ error: 'Invalid event id' }, { status: 400 });
+  const { id } = await context.params;
+
+  const eventId = parseInt(id);
+
+  if (Number.isNaN(eventId)) {
+    return NextResponse.json(
+      { error: 'Invalid event id' },
+      { status: 400 }
+    );
+  }
 
   try {
     const data = await cached(`event:preview:v1:${eventId}`, 600, async () => {
@@ -31,13 +38,17 @@ export async function GET(
       }));
 
       registered.sort((a, b) =>
-        (a.team_number || '').localeCompare(b.team_number || '', undefined, {
-          numeric: true,
-        })
+        (a.team_number || '').localeCompare(
+          b.team_number || '',
+          undefined,
+          {
+            numeric: true,
+          }
+        )
       );
 
-      // Country breakdown
       const countries: Record<string, number> = {};
+
       for (const t of registered) {
         const c = t.country || 'Unknown';
         countries[c] = (countries[c] || 0) + 1;
@@ -50,10 +61,14 @@ export async function GET(
         country_breakdown: countries,
       };
     });
+
     return NextResponse.json(data);
   } catch (e: any) {
     return NextResponse.json(
-      { error: 'Preview failed', message: String(e?.message || e) },
+      {
+        error: 'Preview failed',
+        message: String(e?.message || e),
+      },
       { status: 500 }
     );
   }

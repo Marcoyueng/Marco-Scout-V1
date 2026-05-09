@@ -1,4 +1,4 @@
-mport { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { robotevents } from '@/lib/robotevents';
 import { cached } from '@/lib/cache';
 
